@@ -24,9 +24,12 @@ const orderSchema = new mongoose.Schema(
           type: Number,
           required: true,
         },
-        message:{
-          type:String
-        }
+        message: {
+          type: String,
+        },
+        orderedVariant: {
+          type: String,
+        },
       },
     ],
 
@@ -53,16 +56,23 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    message:{
-    type:String
+    message: {
+      type: String,
     },
-    shippingPrice:{
-      type:String
+    shippingPrice: {
+      type: String,
     },
 
     orderStatus: {
       type: String,
-      enum: ["Processing", "Shipped", "Delivered", "Cancelled", "Refunded","Refund Processing"],
+      enum: [
+        "Processing",
+        "Shipped",
+        "Delivered",
+        "Cancelled",
+        "Refunded",
+        "Refund Processing",
+      ],
       default: "Processing",
     },
 
