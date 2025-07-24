@@ -55,7 +55,8 @@ const signup = async (req, res) => {
       await sendEmail(
         email,
         "Verify your email",
-        `Your OTP is ${otp}. It will expire in 5 minutes.<br> you Ragister as ${accountType} </br>`
+        `Your OTP is ${otp}. It will expire in 5 minutes. you Ragister as ${accountType} 
+        `
       );
     } catch (error) {
       console.error("Error sending OTP email:", error);
