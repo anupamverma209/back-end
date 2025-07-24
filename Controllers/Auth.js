@@ -97,10 +97,9 @@ const verifyOtp = async (req, res) => {
 
     // ❌ OTP doesn't match
     if (user.otp !== otp) {
-      await User.deleteOne({ email });
       return res.status(400).json({
         success: false,
-        message: "Invalid OTP. User data deleted.",
+        message: "Invalid OTP Please try again",
       });
     }
 
@@ -439,35 +438,40 @@ const resetPassword = async (req, res) => {
     const { email, otp, password, confirmPassword } = req.body;
 
     if (!email || !otp || !password || !confirmPassword) {
-      return res.status(400).json({ success: false, message: "All fields are required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
     }
 
     if (password !== confirmPassword) {
-      return res.status(400).json({ success: false, message: "Passwords do not match" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Passwords do not match" });
     }
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
-
-
 
     const hashedPassword = await bcrypt.hash(password, 10);
     user.password = hashedPassword;
     user.confirmPassword = hashedPassword;
-  
 
     await user.save();
 
-    return res.status(200).json({ success: true, message: "Password reset successful" });
+    return res
+      .status(200)
+      .json({ success: true, message: "Password reset successful" });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ success: false, message: "Server error", error: err.message });
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error", error: err.message });
   }
 };
-
-
 
 const verifyForgotPasswordOtp = async (req, res) => {
   try {
@@ -518,8 +522,6 @@ const verifyForgotPasswordOtp = async (req, res) => {
   }
 };
 
-
-
 module.exports = {
   signup,
   verifyOtp,
@@ -530,5 +532,5 @@ module.exports = {
   logout,
   forgotPassword,
   resetPassword,
-  verifyForgotPasswordOtp
+  verifyForgotPasswordOtp,
 };
