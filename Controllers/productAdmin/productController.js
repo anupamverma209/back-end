@@ -6,7 +6,6 @@ const AttributeGroup = require("../../Models/AttributeGroup");
 const cloudinary = require("cloudinary").v2;
 
 
-
 // Helper: Check file type
 function isFileTypeSupported(type, supportedTypes) {
   return supportedTypes.includes(type);

@@ -7,6 +7,9 @@ const { crypto } = require("crypto");
 const sendOtpToMobile = require("../Utils/SMSotp");
 const Mobile = require("../Models/mobil");
 const { error } = require("console");
+const otpTemplate = require("./Templates/otpTemplate");
+const forgotPasswordTemplate = require("./Templates/otpTemplate");
+const reSendOtpTemplate = require("./Templates/otpTemplate");
 
 const generateOtp = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
@@ -55,8 +58,7 @@ const signup = async (req, res) => {
       await sendEmail(
         email,
         "Verify your email",
-        `Your OTP is ${otp}. It will expire in 5 minutes. you Ragister as ${accountType} 
-        `
+        otpTemplate(otp, accountType)
       );
     } catch (error) {
       console.error("Error sending OTP email:", error);
@@ -159,11 +161,7 @@ const reSendOtp = async (req, res) => {
     user.otpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 min
     await user.save();
     try {
-      await sendEmail(
-        email,
-        "Resend OTP",
-        `your OTP is ${otp}. It will expire in 5 minutes.`
-      );
+      await sendEmail(email, "Resend OTP", reSendOtpTemplate(otp));
     } catch (error) {
       console.error("Error sending OTP email:", error);
       return res
@@ -411,11 +409,7 @@ const forgotPassword = async (req, res) => {
 
     // 4. Send OTP via email
     try {
-      await sendEmail(
-        email,
-        "Verify your email",
-        `Your OTP is ${otp}. It will expire in 5 minutes.<br>You requested a password reset.</br>`
-      );
+      await sendEmail(email, "Verify your email", forgotPasswordTemplate(otp));
     } catch (error) {
       console.error("Error sending OTP email:", error);
       return res
