@@ -21,6 +21,7 @@ const {
   forgotPassword,
   resetPassword,
   verifyForgotPasswordOtp,
+  googleLogin,
 } = require("../Controllers/Auth");
 const { auth, isAdmin, isUser, isSeller } = require("../Middleware/Auth");
 const {
@@ -49,13 +50,15 @@ const {
 } = require("../Controllers/userOrderController");
 const User = require("../Models/User");
 
- const {
+const {
   createContact,
   getAllContactsMessage,
   deleteContactMessage,
   getContactMessageById,
 } = require("../Controllers/contactUsController");
-const { createReturnRefundRequest } = require("../Controllers/returnRefundController");
+const {
+  createReturnRefundRequest,
+} = require("../Controllers/returnRefundController");
 
 router.post("/send-otp", sendOtp); // mobile number signup
 router.post("/verify-otp", verifyOtpAndLogin); // mobile number login user
@@ -67,7 +70,7 @@ router.post("/login", Login);
 router.post("/reSendOtp", reSendOtp);
 router.post("/forgotPassword", forgotPassword);
 router.post("/resetPassword", resetPassword);
-router.post("/forgototpverify",verifyForgotPasswordOtp)
+router.post("/forgototpverify", verifyForgotPasswordOtp);
 
 // signup By mobile number
 
@@ -90,7 +93,7 @@ router.put("/cancelOrder:id", auth, cancelOrder);
 router.put("/updateOrderStatus:id", auth, isAdmin, updateOrderStatus); // only for Admin
 router.get("/getAllOrders", auth, isAdmin, getAllOrders); //private route for admin to get
 router.delete("/deleteOrder:id", auth, deleteOrder); // delete order by id
-router.post("/refund-request/:orderid",auth,createReturnRefundRequest)
+router.post("/refund-request/:orderid", auth, createReturnRefundRequest);
 
 // private routes for different user roles
 router.get("/Admin", auth, (req, res) => {
@@ -163,10 +166,21 @@ router.delete("/blogs/:blogId/comments/:commentId", auth, deleteComment);
 
 // contact US Route
 
-
 router.post("/createContact", createContact);
 router.get("/getAllcontactsMessage", auth, isAdmin, getAllContactsMessage);
 router.delete("/deleteContact/:id", auth, isAdmin, deleteContactMessage);
 router.get("/getContactMessageById", auth, isAdmin, getContactMessageById);
+
+// google auth routes
+router.get("/auth/google/callback", googleLogin);
+router.get("/auth/google", (req, res) => {
+  const url = oauth2client.generateAuthUrl({
+    access_type: "offline",
+    prompt: "consent",
+    scope: ["profile", "email", "name"],
+    redirect_uri: process.env.CALLBACK_URL, // explicitly set redirect_uri
+  });
+  res.redirect(url);
+});
 
 module.exports = router;

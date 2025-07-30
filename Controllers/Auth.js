@@ -3,17 +3,16 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const sendEmail = require("../Utils/SendMail");
-const { crypto } = require("crypto");
+const crypto  = require("crypto");
 const sendOtpToMobile = require("../Utils/SMSotp");
 const Mobile = require("../Models/mobil");
 const { error } = require("console");
 const otpTemplate = require("./Templates/otpTemplate");
 const forgotPasswordTemplate = require("./Templates/otpTemplate");
 const reSendOtpTemplate = require("./Templates/otpTemplate");
-
+const { OAuth2Client } = require("google-auth-library");
 const generateOtp = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
-
 // signup method for email users
 // This method handles user registration, including password hashing and OTP generation.
 const signup = async (req, res) => {
@@ -517,6 +516,69 @@ const verifyForgotPasswordOtp = async (req, res) => {
   }
 };
 
+const oauth2client = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.CALLBACK_URL
+);
+const googleLogin = async (req, res) => {
+  try {
+    const { code } = req.query;
+
+    const { tokens } = await oauth2client.getToken(code);
+    oauth2client.setCredentials(tokens);
+
+    const ticket = await oauth2client.verifyIdToken({
+      idToken: tokens.id_token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, picture } = payload;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = new User({
+        name,
+        email,
+        profilePicture: picture,
+        password: crypto.randomBytes(16).toString("hex"),
+        confirmPassword: crypto.randomBytes(16).toString("hex"),
+        accountType: "User",
+        isEmailVerified: true,
+      });
+      await user.save();
+    }
+
+    const token = jwt.sign(
+      { id: user._id, email, accountType: user.accountType },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .status(200)
+      .json({
+        success: true,
+        token,
+        user: {
+          id: user._id,
+          email,
+          accountType: user.accountType,
+        },
+      });
+  } catch (error) {
+    console.error("Google login error:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 module.exports = {
   signup,
   verifyOtp,
@@ -528,4 +590,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   verifyForgotPasswordOtp,
+  googleLogin,
 };
