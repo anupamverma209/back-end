@@ -118,7 +118,7 @@ module.exports = function reSendOtpTemplate(otp) {
           <!-- Footer -->
           <hr style="margin: 40px 0;">
           <p style="font-size: 12px; color: #999; text-align: center;">
-            For support, contact us at <a href="mailto:support@achiciz.com" style="color: #007bff;">support@achiciz.com</a><br>
+            For support, contact us at <a href="mailto:support@achiciz.com" style="color: #007bff;">sahindmailer@gmail.com</a><br>
             &copy; 2025 Achiciz. All rights reserved.
           </p>
         </div>
